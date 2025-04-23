@@ -32,4 +32,4 @@ Possible problems
 
 .. _Package Control: https://packagecontrol.io/
 .. _repository: http://projects.zubr.me/superlime.git
-.. |screenshot| image:: http://projects.zubr.me/browser/superlime/screenshot.png?format=raw
+.. |screenshot| image:: https://github.com/azubr/Superlime/blob/master/screenshot.png?raw=true
