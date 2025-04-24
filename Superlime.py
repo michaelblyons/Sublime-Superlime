@@ -68,16 +68,21 @@ class Superlime(sublime_plugin.EventListener):
 			psCommand = 'powershell -command "%s"' % runasCommand
 			return subprocess.call(psCommand, shell=True)
 		if os.name == "posix":
-			def trySudo(sudo):
-				dd="dd if=%s of=%s" % (source, target)
-				return subprocess.call(sudo % dd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
-			sudoErr = trySudo("pkexec %s")
-			if sudoErr == 127:
-				sudoErr = trySudo("gksudo %s")
-				if sudoErr == 127:
-					sudoErr = trySudo("kdesudo %s")
-					if sudoErr == 127:
-						sudoErr = trySudo("""/usr/bin/osascript -e 'do shell script "%s" with administrator privileges'""")
-						if sudoErr:
-							sublime.message_dialog("No sudo GUI found")
-			return sudoErr
+			sudo_uis = {
+				'polkit': 'pkexec {}',
+				'gnome': 'gksudo {}',
+				'kde': 'kdesudo {}',
+				'mac': '/usr/bin/osascript -e \'do shell script "{}" with administrator privileges\'',
+			}
+			save_cmd='dd if={} of={}'.format(source, target)
+			for sudo_ui in sudo_uis:
+				retcode = subprocess.call(
+					sudo_uis[sudo_ui].format(save_cmd),
+					shell=True,
+					stdout=subprocess.PIPE,
+					stdin=subprocess.PIPE,
+					stderr=subprocess.STDOUT)
+				if retcode != 127:
+					return retcode
+			sublime.message_dialog('No sudo GUI found')
+			return retcode
